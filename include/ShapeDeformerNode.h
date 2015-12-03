@@ -22,31 +22,22 @@
 #include <maya/MPxDeformerNode.h>
 
 // Simple deformer node
-// It will deform the vertices along the normals of the object surface.
-class PushDeformerNode : public MPxDeformerNode {
+class ShapeDeformerNode : public MPxDeformerNode {
 
 public:
-
-    PushDeformerNode() {}
-    
+    ShapeDeformerNode() {}
     virtual MStatus deform(MDataBlock& data, MItGeometry& it_geo,
                          const MMatrix &local_to_world_matrix, unsigned int m_index);
-    
     static void* creator();
-    
     static MStatus initialize();
 
+    // Unique id
     static MTypeId id;
-    
+
+    // Attributes
     static MObject time;
-
     static MObject gravityMagnitude;
-
-    static MObject directionX;
-
-    static MObject directionY;
-
-    static MObject directionZ;
+    static MObject gravityDirection;
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 #include <maya/MFnPlugin.h>
 #include "../include/HelloWorldCmd.h"
-#include "../include/PushDeformerNode.h"
+#include "../include/ShapeDeformerNode.h"
 
 
 // The base of the plugin
