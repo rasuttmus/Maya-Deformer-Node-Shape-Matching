@@ -5,7 +5,7 @@ MStatus initializePlugin(MObject obj) {
   MFnPlugin plugin(obj, "Rasmus, Tim, Kalle", "1.0", "Any");
  
   // Make a deformer node
-  status = plugin.registerNode("pushDeformer", ShapeDeformerNode::id, ShapeDeformerNode::creator,
+  status = plugin.registerNode("shapeMatchDeformer", ShapeDeformerNode::id, ShapeDeformerNode::creator,
                                ShapeDeformerNode::initialize, MPxNode::kDeformerNode);
   CHECK_MSTATUS_AND_RETURN_IT(status);
 

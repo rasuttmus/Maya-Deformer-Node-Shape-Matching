@@ -29,5 +29,5 @@ The deformer plugin is used as follows:
   * Create an object to be deformed
   * Select the object
   * Apply the deformer with:
-  	cmds.deformer(type='pushDeformer')
+  	cmds.deformer(type='shapeMatchDeformer')
   * By changing the parameters "envelope" and "inflation" the deformer changes the mesh

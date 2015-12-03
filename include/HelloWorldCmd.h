@@ -10,7 +10,7 @@
 class HelloWorld : public MPxCommand {
  public:
   HelloWorld() {};
-  virtual MStatus doIt(const MArgList& arg_list);
+  virtual MStatus doIt(const MArgList& argList);
   static void* creator();
 };
 

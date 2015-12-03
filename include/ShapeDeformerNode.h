@@ -26,18 +26,36 @@ class ShapeDeformerNode : public MPxDeformerNode {
 
 public:
     ShapeDeformerNode() {}
-    virtual MStatus deform(MDataBlock& data, MItGeometry& it_geo,
-                         const MMatrix &local_to_world_matrix, unsigned int m_index);
+    virtual MStatus deform(MDataBlock& data, MItGeometry& itGeo,
+                         const MMatrix &localToWorldMatrix, unsigned int mIndex);
     static void* creator();
     static MStatus initialize();
 
     // Unique id
     static MTypeId id;
 
-    // Attributes
-    static MObject time;
-    static MObject gravityMagnitude;
-    static MObject gravityDirection;
+    // Attributes (a as in attribute on variable names)
+    // Global attributes
+    static MObject aGravityMagnitude;
+    static MObject aGravityDirection;
+
+    // Object attributes from rigid body
+    static MObject aCurrentTime;
+    static MObject aLastSceneTime;
+    static MObject aVelocity;
+    static MObject aSpin;
+    static MObject aCenterOfMass;
+    static MObject aImpulse;
+    static MObject aImpulsePosition;
+    static MObject aSpinImpulse;
+    static MObject aMass;
+    static MObject aVolume;
+    static MObject aBounciness;
+    static MObject aDamping;
+    static MObject aStaticFriction;
+    static MObject aDynamicFriction;
+    static MObject aForce;
+    static MObject aTorque;
 };
 
 #endif
