@@ -1,5 +1,5 @@
 # Maya_Custom_Deformer_Plugin
-A plugin for Maya to deform objects using shape matching
+A plugin for Maya to deform objects using shape matching.
 
 Base from a simple hello world maya plugin:
 https://github.com/kbladin/Maya_Plugin_Hello_World
