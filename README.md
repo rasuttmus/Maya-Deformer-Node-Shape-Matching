@@ -3,7 +3,6 @@ A plugin for Maya to deform objects using shape matching.
 
 Base from a simple hello world maya plugin:
 https://github.com/kbladin/Maya_Plugin_Hello_World
-
 The deformation is based on this paper:
 http://www.beosil.com/download/MeshlessDeformations_SIG05.pdf
 
