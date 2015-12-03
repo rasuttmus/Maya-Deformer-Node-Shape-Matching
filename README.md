@@ -8,18 +8,34 @@ Based on the tutorials by Chad Vernon:
 And this tutorial for creating deformer plugins:
 * http://www.ngreen.org/2014/08/implementing-a-simple-maya-python-deformer/
 
-Build on OSX:
-  * mkdir build
-  * cd build
-  * cmake -G "Unix Makefiles" -DMAYA_VERSION=2015 ../ (or whatever maya version)
+Build:
+  * OSX
+    * mkdir build
+    * cd build
+    * cmake -G "Unix Makefiles" -DMAYA_VERSION=2015 ../ (or whatever maya version)
+  * Linux
+    * ..
+  * Windows
+    * ..
 
-Compile on OSX:
-  * cd in to build/ directory
-  * sudo cmake --build . --config Release --target install
+Compile:
+  * OSX
+    * cd in to build/ directory
+    * sudo cmake --build . --config Release --target install
+  * Linux
+    * ..
+  * Windows
+    * ..
 
-For OSX, the compiler will build the file sampleplugin.bundle,
+Load plugin:
+  * OSX:
+    * The compiler will build the file sampleplugin.bundle,
+  * Linux
+    * ..
+  * Windows
+    * ..
   * Open Maya and go to Window -> Settings/Preferences -> Plug-in Manager
-  * Browse for sampleplugin.bundle and open.
+  * Browse for sampleplugin and open.
 
 Now the helloWorld function can be run from the python terminal by:
   * import maya.cmds as cmds
