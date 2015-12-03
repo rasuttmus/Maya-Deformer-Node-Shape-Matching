@@ -1,12 +1,11 @@
 # Maya_Custom_Deformer_Plugin
 A plugin for Maya that writes Hello World
 
-Based on the tutorials by Chad Vernon:
-* http://www.chadvernon.com/blog/resources/maya-api-programming/your-first-plug-in/
-* http://www.chadvernon.com/blog/maya/compiling-maya-plug-ins-with-cmake/
+Base from a simple hello world maya plugin:
+https://github.com/kbladin/Maya_Plugin_Hello_World
 
-And this tutorial for creating deformer plugins:
-* http://www.ngreen.org/2014/08/implementing-a-simple-maya-python-deformer/
+The deformation is based on this paper:
+http://www.beosil.com/download/MeshlessDeformations_SIG05.pdf
 
 Build:
   * OSX
