@@ -5,7 +5,7 @@ Based on the tutorials by Chad Vernon:
 * http://www.chadvernon.com/blog/resources/maya-api-programming/your-first-plug-in/
 * http://www.chadvernon.com/blog/maya/compiling-maya-plug-ins-with-cmake/
 
-And this tutorial for deformer plugins:
+And this tutorial for creating deformer plugins:
 * http://www.ngreen.org/2014/08/implementing-a-simple-maya-python-deformer/
 
 Build on OSX:
@@ -30,4 +30,8 @@ The deformer plugin is used as follows:
   * Select the object
   * Apply the deformer with:
   	cmds.deformer(type='shapeMatchDeformer')
-  * By changing the parameters "envelope" and "inflation" the deformer changes the mesh
+
+A default scene can be created by running the script melScripts/createExampleScene.mel
+This will create a sphere and add a shapeMatchDeformer-node to it. It will
+also connect all the attributes needed from the rigid body to to be able to
+calculate the deformations.
