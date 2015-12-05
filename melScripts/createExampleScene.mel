@@ -4,13 +4,9 @@ polySphere -ch on -o on;
 move -r 0 2.0 0;
 
 // Create dynamics stuff 
-select -r pSphereShape1;
-CreateActiveRigidBody;
 select -r pPlane1;
 CreatePassiveRigidBody;
-select -r pSphereShape1;
 Gravity;
-connectDynamic -f gravityField1  pSphere1;
 
 // Put a deformer node on the sphere
 select -r pSphereShape1;
@@ -23,21 +19,4 @@ connectAttr -f gravityField1.direction shapeMatchDeformer1.aGravityDirection;
 connectAttr -f gravityField1.magnitude shapeMatchDeformer1.aGravityMagnitude;
 
 // Rigid body attributes
-connectAttr -f rigidBody1.currentTime shapeMatchDeformer1.aCurrentTime;
-connectAttr -f rigidBody1.lastSceneTime shapeMatchDeformer1.aLastSceneTime;
-connectAttr -f rigidBody1.velocity shapeMatchDeformer1.aVelocity;
-connectAttr -f rigidBody1.spin shapeMatchDeformer1.aSpin;
-connectAttr -f rigidBody1.centerOfMass shapeMatchDeformer1.aCenterOfMass;
-connectAttr -f rigidBody1.impulse shapeMatchDeformer1.aImpulse;
-connectAttr -f rigidBody1.impulsePosition shapeMatchDeformer1.aImpulsePosition;
-connectAttr -f rigidBody1.spinImpulse shapeMatchDeformer1.aSpinImpulse;
-connectAttr -f rigidBody1.mass shapeMatchDeformer1.aMass;
-connectAttr -f rigidBody1.volume shapeMatchDeformer1.aVolume;
-connectAttr -f rigidBody1.bounciness shapeMatchDeformer1.aBounciness;
-connectAttr -f rigidBody1.damping shapeMatchDeformer1.aDamping;
-connectAttr -f rigidBody1.staticFriction shapeMatchDeformer1.aStaticFriction;
-connectAttr -f rigidBody1.dynamicFriction shapeMatchDeformer1.aDynamicFriction;
-connectAttr -f rigidBody1.force shapeMatchDeformer1.aForce;
-connectAttr -f rigidBody1.torque shapeMatchDeformer1.aTorque;
-
-
+connectAttr -f time1.outTime shapeMatchDeformer1.aCurrentTime;

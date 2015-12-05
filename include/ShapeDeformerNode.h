@@ -12,7 +12,7 @@
 #include <maya/MMatrix.h>
 #include <maya/MPointArray.h>
 #include <maya/MStatus.h>
- 
+
 #include <maya/MFnMesh.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnUnitAttribute.h>
@@ -20,6 +20,8 @@
 #include <maya/MFloatVectorArray.h>
 
 #include <maya/MPxDeformerNode.h>
+
+#include "../include/ParticleSystem.h"
 
 // Simple deformer node
 class ShapeDeformerNode : public MPxDeformerNode {
@@ -30,7 +32,6 @@ public:
                          const MMatrix &localToWorldMatrix, unsigned int mIndex);
     static void* creator();
     static MStatus initialize();
-
     // Unique id
     static MTypeId id;
 
@@ -56,6 +57,10 @@ public:
     static MObject aDynamicFriction;
     static MObject aForce;
     static MObject aTorque;
+
+private:
+    static ParticleSystem* ps;
+    static bool firstFrame;
 };
 
 #endif
