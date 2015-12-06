@@ -18,5 +18,4 @@ connectAttr -f gravityField1.direction shapeMatchDeformer1.aGravityDirection;
 // Gravity Magnitude
 connectAttr -f gravityField1.magnitude shapeMatchDeformer1.aGravityMagnitude;
 
-// Rigid body attributes
 connectAttr -f time1.outTime shapeMatchDeformer1.aCurrentTime;

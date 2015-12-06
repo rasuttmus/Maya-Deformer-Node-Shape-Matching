@@ -42,25 +42,15 @@ public:
 
     // Object attributes from rigid body
     static MObject aCurrentTime;
-    static MObject aLastSceneTime;
-    static MObject aVelocity;
-    static MObject aSpin;
-    static MObject aCenterOfMass;
-    static MObject aImpulse;
-    static MObject aImpulsePosition;
-    static MObject aSpinImpulse;
     static MObject aMass;
-    static MObject aVolume;
-    static MObject aBounciness;
-    static MObject aDamping;
+    static MObject aStiffness;
     static MObject aStaticFriction;
     static MObject aDynamicFriction;
-    static MObject aForce;
-    static MObject aTorque;
 
 private:
     static ParticleSystem* ps;
     static bool firstFrame;
+    static MTime tPrevious;
 };
 
 #endif

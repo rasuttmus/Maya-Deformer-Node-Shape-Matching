@@ -42,10 +42,19 @@ void ParticleSystem::updateForces(float dt)
 	// Should set forces according to input and collisions etc
 	for (int i = 0; i < F.size(); ++i)
 	{
+		// Add gravity
 		F[i] = glm::vec3(0,-9.82,0);
-		if (p[i].y < 0)
+
+		// Add collision impulse
+		if (p[i].y <= 0)
 		{
-			p[i].y  = 0;
+			glm::vec3 vDiff = v[i] - glm::vec3(0,0,0);
+			float elasticity = 1;
+			float mass = 1;
+			glm::vec3 impulse = -(elasticity + 1) * vDiff * mass;
+			
+			F[i] += impulse / dt;
+			p[i].y = 0.01;
 		}
 	}
 }
@@ -55,7 +64,8 @@ void ParticleSystem::updateVelocities(float dt)
 	// Euler integration
 	for (int i = 0; i < v.size(); ++i)
 	{
-		v[i] += F[i] / 1.0f * dt;
+		float mass = 1;
+		v[i] += F[i] / mass * dt;
 		F[i] = glm::vec3(0,0,0);
 	}
 }
