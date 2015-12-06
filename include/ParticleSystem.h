@@ -1,5 +1,10 @@
 #include <vector>
+
+#include <armadillo>
 #include "../ext/glm/glm.hpp"
+
+#include <maya/MGlobal.h>
+
 
 class ParticleSystem
 {
