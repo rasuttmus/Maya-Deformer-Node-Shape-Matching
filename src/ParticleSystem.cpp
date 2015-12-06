@@ -5,13 +5,16 @@ ParticleSystem::ParticleSystem(std::vector<glm::vec3> positions)
 	p.resize(positions.size());
 	v.resize(positions.size());
 	F.resize(positions.size());
-
+	g.resize(positions.size());
+	initialCenterOfMass = glm::vec3(0,0,0);
 	for (int i = 0; i < positions.size(); ++i)
 	{
 		p[i] = positions[i];
 		v[i] = glm::vec3(0,0,0);
 		F[i] = glm::vec3(0,0,0);
+		initialCenterOfMass += positions[i];
 	}
+	initialCenterOfMass *= 1.0f / static_cast<float>(positions.size());
 }
 
 ParticleSystem::~ParticleSystem()
@@ -30,6 +33,22 @@ void ParticleSystem::matchShape(float dt)
 {
 	// 1. Find the rigid body transform R and t
 	// 2. Transform the initial positions
+
+	glm::mat3 A_pq = glm::mat3(0.0f);
+	float particleMass = 1.0f / p0.size();
+	glm::vec3 centerOfMass = computeCOM();
+
+	// Compute A_pq matrix
+	for(unsigned int i = 0; i < p0.size(); i++)
+		A_pq += particleMass * (p[i] - centerOfMass) * (p0[i] - initialCenterOfMass);
+
+	glm::mat3 S = mat3Sqrt(glm::transpose(A_pq) * A_pq);
+	// Compute rotation matrix
+	glm::mat3 R = A_pq * glm::inverse(S);
+
+	// Compute target positions
+	for(unsigned int i = 0; i < p0.size(); i++)
+		g[i] = R * (p0[i] - initialCenterOfMass) + centerOfMass;
 }
 
 glm::vec3 ParticleSystem::getPosition(int i)
@@ -77,4 +96,25 @@ void ParticleSystem::updatePositions(float dt)
 	{
 		p[i] += v[i] * dt;
 	}	
+}
+
+glm::vec3 ParticleSystem::computeCOM()
+{
+	glm::vec3 com = glm::vec3(0,0,0);
+
+	for(unsigned int i = 0; i < p.size(); i++)
+		com += p[i];
+
+	return 1.0f / static_cast<float>(p.size()) * com;
+
+}
+
+glm::mat3 ParticleSystem::mat3Sqrt(glm::mat3 m)
+{
+	for(unsigned int i = 0; i < 3; i++) {
+		for(unsigned int j = 0; j < 3; j++) {
+			m[i][j] = sqrt(m[i][j]);
+		}
+	}
+	return m;
 }
