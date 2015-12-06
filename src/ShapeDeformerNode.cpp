@@ -177,7 +177,7 @@ MStatus ShapeDeformerNode::initialize()
   nAttr.setChannelBox(true);
 
   aMass = nAttr.create("aMass", "mas", MFnNumericData::kDouble, 0.0);
-  nAttr.setDefault(0.0);
+  nAttr.setDefault(1.0);
   nAttr.setChannelBox(true);
 
   aVolume = nAttr.create("aVolume", "vol", MFnNumericData::kDouble, 0.0);
