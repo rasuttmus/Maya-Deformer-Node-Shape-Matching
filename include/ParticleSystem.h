@@ -2,9 +2,8 @@
 
 #include <armadillo>
 #include "../ext/glm/glm.hpp"
-
+#include "../ext/glm/gtc/type_ptr.hpp"
 #include <maya/MGlobal.h>
-
 
 class ParticleSystem
 {

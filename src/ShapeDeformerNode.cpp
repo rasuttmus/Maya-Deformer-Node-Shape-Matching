@@ -76,14 +76,14 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
     MObject oInputGeom = hInput.outputValue().child( inputGeom ).asMesh();
     MFnMesh fnInputMesh( oInputGeom );
 
-    std::string output = "timeDiff = ";
-    output += std::to_string(timeDiff.value());
-    MGlobal::displayInfo(output.c_str());
+    //std::string output = "timeDiff = ";
+    //output += std::to_string(timeDiff.value());
+    //MGlobal::displayInfo(output.c_str());
 
     if (ps)
     {
       int updates = timeDiff.value();
-      int updatesPerTimeStep = 10;
+      int updatesPerTimeStep = 1;
       for (int i = 0; i < abs(updates) * updatesPerTimeStep; ++i)
       {
         ps->stepPhysics(1 / 24.0 / updatesPerTimeStep * SIGN(updates));

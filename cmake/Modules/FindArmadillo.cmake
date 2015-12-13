@@ -1,3 +1,9 @@
-SET( ARMADILLO_INCLUDE_DIRS "/Users/kbladin/Documents/maya_plugins/Maya-Deformer-Node-Shape-Matching/ext/armadillo/include/" )
-SET( ARMADILLO_LIBRARIES "/Users/kbladin/Documents/maya_plugins/Maya-Deformer-Node-Shape-Matching/ext/armadillo/lib/libarmadillo.dylib" )
-
+SET( ARMADILLO_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/ext/armadillo/include/")
+if(WIN32)
+    # Windows
+elseif(APPLE)
+    # Apple
+	SET( ARMADILLO_LIBRARIES "${CMAKE_SOURCE_DIR}/ext/armadillo/lib/libarmadillo.dylib" )
+else()
+    # Linux
+endif()

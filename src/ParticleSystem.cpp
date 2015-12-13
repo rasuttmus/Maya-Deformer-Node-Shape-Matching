@@ -1,7 +1,8 @@
 #include "../include/ParticleSystem.h"
 #include <string>
+#include "../ext/glm/gtx/transform.hpp"
 
-std::string armaMatrixToString(arma::fmat m)
+std::string to_string(arma::fmat m)
 {
 	std::string output("[");
 	for (int i = 0; i < 3; ++i)
@@ -16,6 +17,49 @@ std::string armaMatrixToString(arma::fmat m)
 
 	return output;
 }
+
+std::string to_string(arma::fvec v)
+{
+	std::string output("[");
+	for (int i = 0; i < 3; ++i)
+	{
+		output += " " + std::to_string(v(i)) + " , ";
+		output += "\n";
+	}
+	output += " ]";
+
+	return output;
+}
+
+std::string to_string(glm::vec3 v)
+{
+	std::string output("[");
+	for (int i = 0; i < 3; ++i)
+	{
+		output += " " + std::to_string(v[i]) + " , ";
+		output += "\n";
+	}
+	output += " ]";
+
+	return output;
+}
+
+std::string to_string(glm::mat3 m)
+{
+	std::string output("[");
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 3; ++j)
+		{
+			output += " " + std::to_string(m[i][j]) + " , ";
+		}
+		output += "\n";
+	}
+	output += " ]";
+
+	return output;
+}
+
 
 ParticleSystem::ParticleSystem(std::vector<glm::vec3> positions)
 {
@@ -52,86 +96,66 @@ void ParticleSystem::stepPhysics(float dt)
 
 void ParticleSystem::matchShape(float dt)
 {
-	// 1. Find the rigid body transform R and t
-	// 2. Transform the initial positions
+	std::string output("");
 
-	glm::mat3 A_pq_glm = glm::mat3(0.0f);
-	float particleMass = 1.0f;
-	glm::vec3 centerOfMass = computeCOM();
+	// Original positions and target positions locally
+	arma::fmat X; // Original positions 
+	arma::fmat Y; // Target positions
 
-	// Compute A_pq_glm matrix
-	for(unsigned int i = 0; i < p0.size(); i++)
-		A_pq_glm += particleMass * (p[i] - centerOfMass) * (p0[i] - initialCenterOfMass);
+	arma::fmat S; // Covariance matrix
+	arma::fmat U; // Rotation matrix
+	arma::fvec s; // Eigen values
+	arma::fmat V; // Rotation matrix
+	arma::fmat R; // Final rotation matrix
 
-	arma::fmat A_pq((float*)&A_pq_glm[0], 3, 3);
+	glm::vec3 centerOfMass;
 
-	std::string output("A_pq : \n");
-	output += armaMatrixToString(A_pq);
-	MGlobal::displayInfo(output.c_str());
+	// Allocate
+	X = arma::fmat(3, p.size());
+	Y = arma::fmat(3, p.size());
+	
+	// Set X and Y matrices
+	centerOfMass = computeCOM();
+	for (int i = 0; i < p.size(); ++i)
+	{
+		X(0,i) = p[i].x - centerOfMass.x;
+		X(1,i) = p[i].y - centerOfMass.y;
+		X(2,i) = p[i].z - centerOfMass.z;
 
-	// Compute the sqare root of A_pq.t() * A_pq = S
-	arma::fvec eigval;
-	arma::fmat V;
-	arma::eig_sym(eigval, V, A_pq.t() * A_pq);
-	arma::fmat DSqrt(3,3);
-	DSqrt.eye(3,3);
+		Y(0,i) = p0[i].x - initialCenterOfMass.x;
+		Y(1,i) = p0[i].y - initialCenterOfMass.y;
+		Y(2,i) = p0[i].z - initialCenterOfMass.z;
+	}
 
-	DSqrt(0,0) = eigval(0);
-	DSqrt(1,1) = eigval(1);
-	DSqrt(2,2) = eigval(2);
+	// Compute the covariance matrix, svd and rotation
+	S = X * Y.t();
+	arma::svd(U,s,V,S);
+	R = V * U.t();
+	
+	// If rotation is a reflection, reflect back
+	if (det(R) < 0)
+	{
+		V
+			<< V(0,0) << V(0,1) << -V(0,2) << arma::endr
+			<< V(1,0) << V(1,1) << -V(1,2) << arma::endr
+			<< V(2,0) << V(2,1) << -V(2,2) << arma::endr;
+		R = V * U.t();
+	}
 
-	output = "DSqrt (before sqrt) : \n";
-	output += armaMatrixToString(DSqrt);
-	MGlobal::displayInfo(output.c_str());
-
-	DSqrt(0,0) = sqrt(std::abs(DSqrt(0,0)));
-	DSqrt(1,1) = sqrt(std::abs(DSqrt(1,1)));
-	DSqrt(2,2) = sqrt(std::abs(DSqrt(2,2)));
-
-	output = "DSqrt (after sqrt) : \n";
-	output += armaMatrixToString(DSqrt);
-	MGlobal::displayInfo(output.c_str());
-
-
-	output = "V : \n";
-	output += armaMatrixToString(V);
-	MGlobal::displayInfo(output.c_str());
-
-
-	output = "A_pq.t() * A_pq : \n";
-	output += armaMatrixToString(A_pq.t() * A_pq);
-	MGlobal::displayInfo(output.c_str());
-
-
-	output = "DSqrt : \n";
-	output += armaMatrixToString(DSqrt);
-	MGlobal::displayInfo(output.c_str());
-
-	arma::fmat S = V * DSqrt * V.t();
-
-
-	output = "S : \n";
-	output += armaMatrixToString(S);
-	MGlobal::displayInfo(output.c_str());
-
-	// Rotation matrix
-	arma::fmat R = A_pq * S.i();
-	//R.eye();
-
-	output = "R : \n";
-	output += armaMatrixToString(R);
-	MGlobal::displayInfo(output.c_str());
-
-
+	// Convert to glm matrix
 	glm::mat3 R_glm;
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 3; ++j)
 			R_glm[i][j] = R(i,j);
-
+	// R_glm = glm::mat3(glm::rotate(3.1415f / 8, glm::vec3(1.0f,0.0f,0.0f)));
+	
 	// Compute target positions
 	for(unsigned int i = 0; i < p0.size(); i++)
 		g[i] = R_glm * (p0[i] - initialCenterOfMass) + centerOfMass;
 
+	output = "R : \n";
+	output += to_string(R);
+	MGlobal::displayInfo(output.c_str());
 }
 
 glm::vec3 ParticleSystem::getPosition(int i)
@@ -158,6 +182,7 @@ void ParticleSystem::updateForces(float dt)
 			F[i] += impulse / dt;
 			p[i].y = 0.01;
 		}
+		
 	}
 }
 
@@ -170,7 +195,7 @@ void ParticleSystem::updateVelocities(float dt)
 		v[i] += F[i] / mass * dt;
 
 		// Add shape matching
-		//v[i] += 0.1f * (g[i] - p[i]) / dt;
+		v[i] += 0.5f * (g[i] - p[i]) / dt;
 
 		F[i] = glm::vec3(0,0,0);
 	}
@@ -178,10 +203,12 @@ void ParticleSystem::updateVelocities(float dt)
 
 void ParticleSystem::updatePositions(float dt)
 {
-	// Euler integration
+	//Euler integration
 	for (int i = 0; i < p.size(); ++i)
 	{
 		p[i] += v[i] * dt;
+		// Add shape matching (or not?)
+		//p[i] += 1.0f * (g[i] - p[i]);
 	}	
 }
 
