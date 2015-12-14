@@ -44,6 +44,7 @@ public:
     static MObject aCurrentTime;
     static MObject aMass;
     static MObject aStiffness;
+    static MObject aElasticity;
     static MObject aStaticFriction;
     static MObject aDynamicFriction;
 

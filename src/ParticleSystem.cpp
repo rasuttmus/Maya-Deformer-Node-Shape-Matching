@@ -1,71 +1,11 @@
 #include "../include/ParticleSystem.h"
-#include <string>
-#include "../ext/glm/gtx/transform.hpp"
-
-std::string to_string(arma::fmat m)
-{
-	std::string output("[");
-	for (int i = 0; i < 3; ++i)
-	{
-		for (int j = 0; j < 3; ++j)
-		{
-			output += " " + std::to_string(m(i, j)) + " , ";
-		}
-		output += "\n";
-	}
-	output += " ]";
-
-	return output;
-}
-
-std::string to_string(arma::fvec v)
-{
-	std::string output("[");
-	for (int i = 0; i < 3; ++i)
-	{
-		output += " " + std::to_string(v(i)) + " , ";
-		output += "\n";
-	}
-	output += " ]";
-
-	return output;
-}
-
-std::string to_string(glm::vec3 v)
-{
-	std::string output("[");
-	for (int i = 0; i < 3; ++i)
-	{
-		output += " " + std::to_string(v[i]) + " , ";
-		output += "\n";
-	}
-	output += " ]";
-
-	return output;
-}
-
-std::string to_string(glm::mat3 m)
-{
-	std::string output("[");
-	for (int i = 0; i < 3; ++i)
-	{
-		for (int j = 0; j < 3; ++j)
-		{
-			output += " " + std::to_string(m[i][j]) + " , ";
-		}
-		output += "\n";
-	}
-	output += " ]";
-
-	return output;
-}
-
 
 ParticleSystem::ParticleSystem(std::vector<glm::vec3> positions)
 {
 	p0.resize(positions.size());
 	p.resize(positions.size());
 	v.resize(positions.size());
+	v_m_prev.resize(positions.size());
 	F.resize(positions.size());
 	g.resize(positions.size());
 	initialCenterOfMass = glm::vec3(0,0,0);
@@ -75,6 +15,7 @@ ParticleSystem::ParticleSystem(std::vector<glm::vec3> positions)
 		p[i] = positions[i];
 		g[i] = positions[i];
 		v[i] = glm::vec3(0,0,0);
+		v_m_prev[i] = glm::vec3(0,0,0);
 		F[i] = glm::vec3(0,0,0);
 		initialCenterOfMass += positions[i];
 	}
@@ -87,14 +28,14 @@ ParticleSystem::~ParticleSystem()
 	
 }
 
-void ParticleSystem::stepPhysics(float dt)
+void ParticleSystem::stepPhysics(float dt, PhysicsArguments pArg)
 {
-	updateForces(dt);
-	updateVelocities(dt);
+	updateForces(dt, pArg);
+	updateVelocities(dt, pArg);
 	updatePositions(dt);
 }
 
-void ParticleSystem::matchShape(float dt)
+void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 {
 	std::string output("");
 
@@ -135,27 +76,24 @@ void ParticleSystem::matchShape(float dt)
 	// If rotation is a reflection, reflect back
 	if (det(R) < 0)
 	{
-		V
-			<< V(0,0) << V(0,1) << -V(0,2) << arma::endr
-			<< V(1,0) << V(1,1) << -V(1,2) << arma::endr
-			<< V(2,0) << V(2,1) << -V(2,2) << arma::endr;
-		R = V * U.t();
+		R(0,2) = -R(0,2);
+		R(1,2) = -R(1,2);
+		R(2,2) = -R(2,2);
 	}
 
 	// Convert to glm matrix
-	glm::mat3 R_glm;
-	for (int i = 0; i < 3; ++i)
-		for (int j = 0; j < 3; ++j)
-			R_glm[i][j] = R(i,j);
-	// R_glm = glm::mat3(glm::rotate(3.1415f / 8, glm::vec3(1.0f,0.0f,0.0f)));
+	glm::mat3 R_glm = to_glm(R);
 	
 	// Compute target positions
 	for(unsigned int i = 0; i < p0.size(); i++)
 		g[i] = R_glm * (p0[i] - initialCenterOfMass) + centerOfMass;
 
-	output = "R : \n";
-	output += to_string(R);
-	MGlobal::displayInfo(output.c_str());
+	// Add shape matching
+	for (int i = 0; i < p.size(); ++i)
+	{
+		v[i] += pArg.stiffness * (g[i] - p[i]) / dt - v_m_prev[i];		
+		p[i] += v[i] * dt;
+	}	
 }
 
 glm::vec3 ParticleSystem::getPosition(int i)
@@ -163,40 +101,32 @@ glm::vec3 ParticleSystem::getPosition(int i)
 	return p[i];
 }
 
-void ParticleSystem::updateForces(float dt)
+void ParticleSystem::updateForces(float dt, PhysicsArguments pArg)
 {
 	// Should set forces according to input and collisions etc
 	for (int i = 0; i < F.size(); ++i)
 	{
 		// Add gravity
-		F[i] = glm::vec3(0,-9.82,0);
+		F[i] = pArg.gravity;
 
 		// Add collision impulse
 		if (p[i].y <= 0)
 		{
-			glm::vec3 vDiff = v[i] - glm::vec3(0,0,0);
-			float elasticity = 1;
-			float mass = 1;
-			glm::vec3 impulse = -(elasticity + 1) * vDiff * mass;
+			glm::vec3 vDiff = (v[i]) - glm::vec3(0,0,0);
+			glm::vec3 impulse = -(pArg.elasticity + 1) * vDiff * pArg.mass;
 			
 			F[i] += impulse / dt;
 			p[i].y = 0.01;
 		}
-		
 	}
 }
 
-void ParticleSystem::updateVelocities(float dt)
+void ParticleSystem::updateVelocities(float dt, PhysicsArguments pArg)
 {
 	// Euler integration
 	for (int i = 0; i < v.size(); ++i)
 	{
-		float mass = 1;
-		v[i] += F[i] / mass * dt;
-
-		// Add shape matching
-		v[i] += 0.5f * (g[i] - p[i]) / dt;
-
+		v[i] += F[i] / pArg.mass * dt;
 		F[i] = glm::vec3(0,0,0);
 	}
 }
@@ -207,8 +137,6 @@ void ParticleSystem::updatePositions(float dt)
 	for (int i = 0; i < p.size(); ++i)
 	{
 		p[i] += v[i] * dt;
-		// Add shape matching (or not?)
-		//p[i] += 1.0f * (g[i] - p[i]);
 	}	
 }
 
@@ -220,15 +148,4 @@ glm::vec3 ParticleSystem::computeCOM()
 		com += p[i];
 
 	return (1.0f / static_cast<float>(p.size())) * com;
-
-}
-
-glm::mat3 ParticleSystem::mat3Sqrt(glm::mat3 m)
-{
-	for(unsigned int i = 0; i < 3; i++) {
-		for(unsigned int j = 0; j < 3; j++) {
-			m[i][j] = sqrt(m[i][j]);
-		}
-	}
-	return m;
 }

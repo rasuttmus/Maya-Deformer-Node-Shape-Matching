@@ -1,16 +1,16 @@
 // Create a plane and a sphere
 polyPlane -ch on -o on -w 10 -h 10 -sw 1 -sh 1 -cuv 2;
-polySphere -ch on -o on;
+polyTorus;
 //polyCube;
 move -r 0 2.0 0;
 
 // Create dynamics stuff 
-select -r pSphere1;
+select -r pTorus1;
 CreatePassiveRigidBody;
 Gravity;
 
 // Put a deformer node on the sphere
-select -r pSphere1;
+select -r pTorus1;
 deformer -type shapeMatchDeformer;
 
 // Connect the dynamics attributes to the deformer node

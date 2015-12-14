@@ -2,7 +2,6 @@
 
 #include "../include/ShapeDeformerNode.h"
 
-
 #define SIGN(a) (a < 0 ? -1 : 1)
 
 MTypeId ShapeDeformerNode::id(0x00000002);
@@ -12,6 +11,7 @@ MObject ShapeDeformerNode::aGravityDirection;
 MObject ShapeDeformerNode::aCurrentTime;
 MObject ShapeDeformerNode::aMass;
 MObject ShapeDeformerNode::aStiffness;
+MObject ShapeDeformerNode::aElasticity;
 MObject ShapeDeformerNode::aStaticFriction;
 MObject ShapeDeformerNode::aDynamicFriction;
 
@@ -46,14 +46,8 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
     
     // Data used in the calculations
     float env;
-    double
-      m,        // Mass
-      st,       // Damping
-      sf,       // Static friction
-      df;       // Dynamic friction
 
-    MVector
-      g;        // Gravity vector
+    PhysicsArguments pArg;
     MPoint vertexPos;
 
     // Fetch the attribute values
@@ -61,12 +55,14 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
     tNow = data.inputValue(aCurrentTime).asTime();
     MTime timeDiff = tNow - tPrevious;
     tPrevious = tNow;
-    g = data.inputValue(aGravityMagnitude).asDouble() *
-        data.inputValue(aGravityDirection).asVector();
-    m = data.inputValue(aMass).asDouble();
-    st = data.inputValue(aStiffness).asDouble();
-    df = data.inputValue(aStaticFriction).asDouble();
-    sf = data.inputValue(aDynamicFriction).asDouble();
+    
+    pArg.gravity = to_glm(data.inputValue(aGravityMagnitude).asDouble() *
+        data.inputValue(aGravityDirection).asVector());
+    pArg.mass = data.inputValue(aMass).asDouble();
+    pArg.stiffness = data.inputValue(aStiffness).asDouble();
+    pArg.elasticity = data.inputValue(aElasticity).asDouble();
+    pArg.dynamicFriction = data.inputValue(aStaticFriction).asDouble();
+    pArg.staticFriction = data.inputValue(aDynamicFriction).asDouble();
     
     // Get the input mesh (fnInputMesh)
     MArrayDataHandle hInput = data.outputArrayValue( input, &status );
@@ -83,11 +79,11 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
     if (ps)
     {
       int updates = timeDiff.value();
-      int updatesPerTimeStep = 1;
+      int updatesPerTimeStep = 20;
       for (int i = 0; i < abs(updates) * updatesPerTimeStep; ++i)
       {
-        ps->stepPhysics(1 / 24.0 / updatesPerTimeStep * SIGN(updates));
-        ps->matchShape(1 / 24.0 / updatesPerTimeStep * SIGN(updates));
+        ps->stepPhysics(1 / 24.0 / updatesPerTimeStep * SIGN(updates), pArg);
+        ps->matchShape(1 / 24.0 / updatesPerTimeStep * SIGN(updates), pArg);
       }
     }
     else
@@ -139,6 +135,10 @@ MStatus ShapeDeformerNode::initialize()
   nAttr.setChannelBox(true);
 
   aStiffness = nAttr.create("aStiffness", "st", MFnNumericData::kDouble, 0.0);
+  nAttr.setDefault(1.0);
+  nAttr.setChannelBox(true);
+
+  aElasticity = nAttr.create("aElasticity", "el", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(0.0);
   nAttr.setChannelBox(true);
 
@@ -156,6 +156,7 @@ MStatus ShapeDeformerNode::initialize()
   addAttribute(aGravityDirection);
   addAttribute(aMass);
   addAttribute(aStiffness);
+  addAttribute(aElasticity);
   addAttribute(aStaticFriction);
   addAttribute(aDynamicFriction);
 
@@ -165,6 +166,7 @@ MStatus ShapeDeformerNode::initialize()
   attributeAffects(aGravityDirection, outputGeom);
   attributeAffects(aMass, outputGeom);
   attributeAffects(aStiffness, outputGeom);
+  attributeAffects(aElasticity, outputGeom);
   attributeAffects(aStaticFriction, outputGeom);
   attributeAffects(aDynamicFriction, outputGeom);
 
