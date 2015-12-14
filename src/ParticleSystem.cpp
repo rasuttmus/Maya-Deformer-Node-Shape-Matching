@@ -107,7 +107,7 @@ void ParticleSystem::updateForces(float dt, PhysicsArguments pArg)
 	for (int i = 0; i < F.size(); ++i)
 	{
 		// Add gravity
-		F[i] = pArg.gravity;
+		F[i] = pArg.gravity * pArg.mass;
 
 		// Add collision impulse
 		if (p[i].y <= 0)
