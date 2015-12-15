@@ -5,7 +5,6 @@ ParticleSystem::ParticleSystem(std::vector<glm::vec3> positions)
 	p0.resize(positions.size());
 	p.resize(positions.size());
 	v.resize(positions.size());
-	v_m_prev.resize(positions.size());
 	F.resize(positions.size());
 	g.resize(positions.size());
 	initialCenterOfMass = glm::vec3(0,0,0);
@@ -15,7 +14,6 @@ ParticleSystem::ParticleSystem(std::vector<glm::vec3> positions)
 		p[i] = positions[i];
 		g[i] = positions[i];
 		v[i] = glm::vec3(0,0,0);
-		v_m_prev[i] = glm::vec3(0,0,0);
 		F[i] = glm::vec3(0,0,0);
 		initialCenterOfMass += positions[i];
 	}
@@ -55,7 +53,7 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 	X = arma::fmat(3, p.size());
 	Y = arma::fmat(3, p.size());
 	
-	// Set X and Y matrices
+	// Set X and Y matrices (we assume that all particles have the same mass)
 	centerOfMass = computeCOM();
 	for (int i = 0; i < p.size(); ++i)
 	{
@@ -91,8 +89,8 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 	// Add shape matching
 	for (int i = 0; i < p.size(); ++i)
 	{
-		v[i] += pArg.stiffness * (g[i] - p[i]) / dt - v_m_prev[i];		
-		p[i] += v[i] * dt;
+		v[i] += 1.0f * (g[i] - p[i]) / dt;
+		p[i] += pArg.stiffness * (g[i] - p[i]);
 	}	
 }
 
@@ -109,13 +107,19 @@ void ParticleSystem::updateForces(float dt, PhysicsArguments pArg)
 		// Add gravity
 		F[i] = pArg.gravity * pArg.mass;
 
-		// Add collision impulse
+		// Add collision impulse and friction
 		if (p[i].y <= 0)
 		{
+			glm::vec3 normal = glm::vec3(0.0f,1.0f,0.0f);
 			glm::vec3 vDiff = (v[i]) - glm::vec3(0,0,0);
-			glm::vec3 impulse = -(pArg.elasticity + 1) * vDiff * pArg.mass;
 			
-			F[i] += impulse / dt;
+			glm::vec3 vDiff1 = normal * glm::dot(normal, vDiff); // vDiff composant in normal direction
+			glm::vec3 vDiff2 = vDiff - vDiff1; // vDiff composant orthogonal to normal direction
+
+			glm::vec3 collisionImpulse = -(pArg.elasticity + 1) * vDiff1 * pArg.mass;
+			glm::vec3 frictionImpulse = -pArg.dynamicFriction * vDiff2 * pArg.mass;
+			
+			F[i] += (collisionImpulse + frictionImpulse) / dt;
 			p[i].y = 0.01;
 		}
 	}

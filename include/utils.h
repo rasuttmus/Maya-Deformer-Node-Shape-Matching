@@ -17,6 +17,6 @@ std::string to_string(glm::mat3 m);
 
 // Conversions
 glm::vec3 to_glm(arma::fvec v);
-glm::mat3 to_glm(arma::fmat);
+glm::mat3 to_glm(arma::fmat M);
 glm::vec3 to_glm(MVector v);
 

@@ -37,16 +37,16 @@ public:
 
     // Attributes (a as in attribute on variable names)
     // Global attributes
-    static MObject aGravityMagnitude;
-    static MObject aGravityDirection;
+    static MObject GravityMagnitude;
+    static MObject GravityDirection;
 
     // Object attributes from rigid body
-    static MObject aCurrentTime;
-    static MObject aMass;
-    static MObject aStiffness;
-    static MObject aElasticity;
-    static MObject aStaticFriction;
-    static MObject aDynamicFriction;
+    static MObject CurrentTime;
+    static MObject Mass;
+    static MObject Stiffness;
+    static MObject Elasticity;
+    static MObject StaticFriction;
+    static MObject DynamicFriction;
 
 private:
     static ParticleSystem* ps;

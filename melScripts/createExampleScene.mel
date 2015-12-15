@@ -15,8 +15,8 @@ deformer -type shapeMatchDeformer;
 
 // Connect the dynamics attributes to the deformer node
 // Gravity Direction
-connectAttr -f gravityField1.direction shapeMatchDeformer1.aGravityDirection;
+connectAttr -f gravityField1.direction shapeMatchDeformer1.GravityDirection;
 // Gravity Magnitude
-connectAttr -f gravityField1.magnitude shapeMatchDeformer1.aGravityMagnitude;
+connectAttr -f gravityField1.magnitude shapeMatchDeformer1.GravityMagnitude;
 
-connectAttr -f time1.outTime shapeMatchDeformer1.aCurrentTime;
+connectAttr -f time1.outTime shapeMatchDeformer1.CurrentTime;

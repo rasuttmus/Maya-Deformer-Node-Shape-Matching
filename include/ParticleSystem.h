@@ -41,7 +41,6 @@ private:
 	std::vector<glm::vec3> p0; // Initial positions
 	std::vector<glm::vec3> p;
 	std::vector<glm::vec3> v;
-	std::vector<glm::vec3> v_m_prev;
 	std::vector<glm::vec3> F;
 	std::vector<glm::vec3> g;
 	glm::vec3 initialCenterOfMass;

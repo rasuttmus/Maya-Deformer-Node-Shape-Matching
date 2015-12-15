@@ -5,15 +5,15 @@
 #define SIGN(a) (a < 0 ? -1 : 1)
 
 MTypeId ShapeDeformerNode::id(0x00000002);
-MObject ShapeDeformerNode::aGravityMagnitude;
-MObject ShapeDeformerNode::aGravityDirection;
+MObject ShapeDeformerNode::GravityMagnitude;
+MObject ShapeDeformerNode::GravityDirection;
 
-MObject ShapeDeformerNode::aCurrentTime;
-MObject ShapeDeformerNode::aMass;
-MObject ShapeDeformerNode::aStiffness;
-MObject ShapeDeformerNode::aElasticity;
-MObject ShapeDeformerNode::aStaticFriction;
-MObject ShapeDeformerNode::aDynamicFriction;
+MObject ShapeDeformerNode::CurrentTime;
+MObject ShapeDeformerNode::Mass;
+MObject ShapeDeformerNode::Stiffness;
+MObject ShapeDeformerNode::Elasticity;
+MObject ShapeDeformerNode::StaticFriction;
+MObject ShapeDeformerNode::DynamicFriction;
 
 bool ShapeDeformerNode::firstFrame;
 ParticleSystem* ShapeDeformerNode::ps;
@@ -24,10 +24,10 @@ void* ShapeDeformerNode::creator() { return new ShapeDeformerNode; }
 MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
                           const MMatrix &localToWorldMatrix, unsigned int mIndex)
 {
-  MTime tNow = data.inputValue(aCurrentTime).asTime();
+  MTime tNow = data.inputValue(CurrentTime).asTime();
   if (firstFrame || tNow.value() == 1)
   { // Ugly hack (constructor here)
-    tPrevious = data.inputValue(aCurrentTime).asTime();
+    tPrevious = data.inputValue(CurrentTime).asTime();
     std::vector<glm::vec3> p0;
     for (; !itGeo.isDone(); itGeo.next()) {
       // Positions in world coordinates
@@ -52,17 +52,17 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
 
     // Fetch the attribute values
     env = data.inputValue(envelope).asFloat();
-    tNow = data.inputValue(aCurrentTime).asTime();
+    tNow = data.inputValue(CurrentTime).asTime();
     MTime timeDiff = tNow - tPrevious;
     tPrevious = tNow;
     
-    pArg.gravity = to_glm(data.inputValue(aGravityMagnitude).asDouble() *
-        data.inputValue(aGravityDirection).asVector());
-    pArg.mass = data.inputValue(aMass).asDouble();
-    pArg.stiffness = data.inputValue(aStiffness).asDouble();
-    pArg.elasticity = data.inputValue(aElasticity).asDouble();
-    pArg.dynamicFriction = data.inputValue(aStaticFriction).asDouble();
-    pArg.staticFriction = data.inputValue(aDynamicFriction).asDouble();
+    pArg.gravity = to_glm(data.inputValue(GravityMagnitude).asDouble() *
+        data.inputValue(GravityDirection).asVector());
+    pArg.mass = data.inputValue(Mass).asDouble();
+    pArg.stiffness = data.inputValue(Stiffness).asDouble();
+    pArg.elasticity = data.inputValue(Elasticity).asDouble();
+    pArg.dynamicFriction = data.inputValue(DynamicFriction).asDouble();
+    pArg.staticFriction = data.inputValue(StaticFriction).asDouble();
     
     // Get the input mesh (fnInputMesh)
     MArrayDataHandle hInput = data.outputArrayValue( input, &status );
@@ -79,7 +79,7 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
     if (ps)
     {
       int updates = timeDiff.value();
-      int updatesPerTimeStep = 20;
+      int updatesPerTimeStep = 2;
       for (int i = 0; i < abs(updates) * updatesPerTimeStep; ++i)
       {
         ps->stepPhysics(1 / 24.0 / updatesPerTimeStep * SIGN(updates), pArg);
@@ -114,61 +114,61 @@ MStatus ShapeDeformerNode::initialize()
   MFnUnitAttribute uAttr;
 
   // Create numeric attributes needed in the deformation
-  aGravityMagnitude = nAttr.create("aGravityMagnitude", "gm", MFnNumericData::kDouble, 0.0);
+  GravityMagnitude = nAttr.create("GravityMagnitude", "gm", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(0.0);
   nAttr.setMin(0.0);
   nAttr.setMax(10.0);
   nAttr.setChannelBox(true);
 
-  aGravityDirection = nAttr.create("aGravityDirection", "gd", MFnNumericData::k3Double, 0.0);
+  GravityDirection = nAttr.create("GravityDirection", "gd", MFnNumericData::k3Double, 0.0);
   nAttr.setDefault(0.0);
   nAttr.setMin(-1.0);
   nAttr.setMax(1.0);
   nAttr.setChannelBox(true);
 
-  aCurrentTime = uAttr.create("aCurrentTime", "ct", MFnUnitAttribute::kTime, 0.0);
+  CurrentTime = uAttr.create("CurrentTime", "ct", MFnUnitAttribute::kTime, 0.0);
   uAttr.setDefault(MAnimControl::currentTime().as(MTime::kFilm));
   uAttr.setChannelBox(true);
 
-  aMass = nAttr.create("aMass", "mas", MFnNumericData::kDouble, 0.0);
+  Mass = nAttr.create("Mass", "mas", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(1.0);
   nAttr.setChannelBox(true);
 
-  aStiffness = nAttr.create("aStiffness", "st", MFnNumericData::kDouble, 0.0);
+  Stiffness = nAttr.create("Stiffness", "st", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(1.0);
   nAttr.setChannelBox(true);
 
-  aElasticity = nAttr.create("aElasticity", "el", MFnNumericData::kDouble, 0.0);
+  Elasticity = nAttr.create("Elasticity", "el", MFnNumericData::kDouble, 0.0);
+  nAttr.setDefault(0.5);
+  nAttr.setChannelBox(true);
+
+  StaticFriction = nAttr.create("StaticFriction", "sf", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(0.0);
   nAttr.setChannelBox(true);
 
-  aStaticFriction = nAttr.create("aStaticFriction", "sf", MFnNumericData::kDouble, 0.0);
-  nAttr.setDefault(0.0);
-  nAttr.setChannelBox(true);
-
-  aDynamicFriction = nAttr.create("aDynamicFriction", "df", MFnNumericData::kDouble, 0.0);
-  nAttr.setDefault(0.0);
+  DynamicFriction = nAttr.create("DynamicFriction", "df", MFnNumericData::kDouble, 0.0);
+  nAttr.setDefault(0.5);
   nAttr.setChannelBox(true);
 
   // Add the attributes
-  addAttribute(aCurrentTime);
-  addAttribute(aGravityMagnitude);
-  addAttribute(aGravityDirection);
-  addAttribute(aMass);
-  addAttribute(aStiffness);
-  addAttribute(aElasticity);
-  addAttribute(aStaticFriction);
-  addAttribute(aDynamicFriction);
+  addAttribute(CurrentTime);
+  addAttribute(GravityMagnitude);
+  addAttribute(GravityDirection);
+  addAttribute(Mass);
+  addAttribute(Stiffness);
+  addAttribute(Elasticity);
+  addAttribute(StaticFriction);
+  addAttribute(DynamicFriction);
 
   // Affecting (What does this do?)
-  attributeAffects(aCurrentTime, outputGeom);
-  attributeAffects(aGravityMagnitude, outputGeom);
-  attributeAffects(aGravityDirection, outputGeom);
-  attributeAffects(aMass, outputGeom);
-  attributeAffects(aStiffness, outputGeom);
-  attributeAffects(aElasticity, outputGeom);
-  attributeAffects(aStaticFriction, outputGeom);
-  attributeAffects(aDynamicFriction, outputGeom);
+  attributeAffects(CurrentTime, outputGeom);
+  attributeAffects(GravityMagnitude, outputGeom);
+  attributeAffects(GravityDirection, outputGeom);
+  attributeAffects(Mass, outputGeom);
+  attributeAffects(Stiffness, outputGeom);
+  attributeAffects(Elasticity, outputGeom);
+  attributeAffects(StaticFriction, outputGeom);
+  attributeAffects(DynamicFriction, outputGeom);
 
   // Make the deformer weights paintable (maybe wait with this)
   // MGlobal::executeCommand("makePaintable -attrType multiFloat -sm deformer ShapeDeformerNode weights;");
