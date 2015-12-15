@@ -11,6 +11,8 @@ MObject ShapeDeformerNode::GravityDirection;
 MObject ShapeDeformerNode::CurrentTime;
 MObject ShapeDeformerNode::Mass;
 MObject ShapeDeformerNode::Stiffness;
+MObject ShapeDeformerNode::Flappyness;
+MObject ShapeDeformerNode::Deformation;
 MObject ShapeDeformerNode::Elasticity;
 MObject ShapeDeformerNode::StaticFriction;
 MObject ShapeDeformerNode::DynamicFriction;
@@ -60,6 +62,8 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
         data.inputValue(GravityDirection).asVector());
     pArg.mass = data.inputValue(Mass).asDouble();
     pArg.stiffness = data.inputValue(Stiffness).asDouble();
+    pArg.flappyness = data.inputValue(Flappyness).asDouble();
+    pArg.deformation = data.inputValue(Deformation).asDouble();
     pArg.elasticity = data.inputValue(Elasticity).asDouble();
     pArg.dynamicFriction = data.inputValue(DynamicFriction).asDouble();
     pArg.staticFriction = data.inputValue(StaticFriction).asDouble();
@@ -133,29 +137,53 @@ MStatus ShapeDeformerNode::initialize()
   Mass = nAttr.create("Mass", "mas", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(1.0);
   nAttr.setChannelBox(true);
+  nAttr.setMin(0.0);
+  nAttr.setMax(10.0);
 
   Stiffness = nAttr.create("Stiffness", "st", MFnNumericData::kDouble, 0.0);
-  nAttr.setDefault(1.0);
+  nAttr.setDefault(0.5);
   nAttr.setChannelBox(true);
+  nAttr.setMin(0.0);
+  nAttr.setMax(1.0);
 
+  Flappyness = nAttr.create("Flappyness", "fl", MFnNumericData::kDouble, 0.0);
+  nAttr.setDefault(0.5);
+  nAttr.setChannelBox(true);
+  nAttr.setMin(0.0);
+  nAttr.setMax(1.0);
+  
+  Deformation = nAttr.create("Deformation", "de", MFnNumericData::kDouble, 0.0);
+  nAttr.setDefault(0.5);
+  nAttr.setChannelBox(true);
+  nAttr.setMin(0.0);
+  nAttr.setMax(1.0);
+  
   Elasticity = nAttr.create("Elasticity", "el", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(0.5);
   nAttr.setChannelBox(true);
-
+  nAttr.setMin(0.0);
+  nAttr.setMax(1.0);
+  
   StaticFriction = nAttr.create("StaticFriction", "sf", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(0.0);
   nAttr.setChannelBox(true);
-
+  nAttr.setMin(0.0);
+  nAttr.setMax(1.0);
+  
   DynamicFriction = nAttr.create("DynamicFriction", "df", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(0.5);
   nAttr.setChannelBox(true);
-
+  nAttr.setMin(0.0);
+  nAttr.setMax(1.0);
+  
   // Add the attributes
   addAttribute(CurrentTime);
   addAttribute(GravityMagnitude);
   addAttribute(GravityDirection);
   addAttribute(Mass);
   addAttribute(Stiffness);
+  addAttribute(Flappyness);
+  addAttribute(Deformation);
   addAttribute(Elasticity);
   addAttribute(StaticFriction);
   addAttribute(DynamicFriction);
@@ -166,6 +194,8 @@ MStatus ShapeDeformerNode::initialize()
   attributeAffects(GravityDirection, outputGeom);
   attributeAffects(Mass, outputGeom);
   attributeAffects(Stiffness, outputGeom);
+  attributeAffects(Flappyness, outputGeom);
+  attributeAffects(Deformation, outputGeom);
   attributeAffects(Elasticity, outputGeom);
   attributeAffects(StaticFriction, outputGeom);
   attributeAffects(DynamicFriction, outputGeom);

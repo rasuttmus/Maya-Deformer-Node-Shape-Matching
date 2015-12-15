@@ -44,6 +44,8 @@ public:
     static MObject CurrentTime;
     static MObject Mass;
     static MObject Stiffness;
+    static MObject Flappyness;
+    static MObject Deformation;
     static MObject Elasticity;
     static MObject StaticFriction;
     static MObject DynamicFriction;

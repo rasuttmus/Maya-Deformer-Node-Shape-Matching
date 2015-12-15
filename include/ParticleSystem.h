@@ -13,11 +13,13 @@
 struct PhysicsArguments
 {
 	float
-		mass,        // Mass
-		stiffness,       // Stiffnes
-		elasticity,       // Stiffnes
-		staticFriction,       // Static friction
-		dynamicFriction;       // Dynamic friction
+		mass,
+		stiffness,
+		elasticity,
+		flappyness,
+		deformation,
+		staticFriction,
+		dynamicFriction;
 
     glm::vec3
 		gravity;        // Gravity vector
@@ -44,4 +46,6 @@ private:
 	std::vector<glm::vec3> F;
 	std::vector<glm::vec3> g;
 	glm::vec3 initialCenterOfMass;
+
+	arma::fmat Aqq; // Inverse covariance matrix for initial shape
 };
