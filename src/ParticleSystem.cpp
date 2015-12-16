@@ -87,7 +87,7 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 	Apq = X * Y.t();
 	arma::svd(U,s,V,Apq);
 	R = V * U.t();
-	A = Apq * Aqq;
+	//A = Apq * Aqq;
 	
 	// If rotation has a reflection, reflect back
 	if (det(R) < 0)
@@ -98,25 +98,25 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 	}
 
 	// Make sure volume is conserved for linear transformation
-	A /= pow(arma::det(A), 1/3.0f);
+	//A /= pow(arma::det(A), 1/3.0f);
 
 	// Linear combination of rotation and linear transformation matrix
-	AR = (pArg.deformation * R * A * R + (1 - pArg.deformation) * R); // The Stefan Löfvén operation
+	//AR = (pArg.deformation * R * A * R + (1 - pArg.deformation) * R); // The Stefan Löfvén operation
 
 	// Convert to glm matrix
-	glm::mat3 AR_glm = to_glm(AR);
+	glm::mat3 R_glm = to_glm(R);
 	//glm::mat3 R_glm = to_glm(R);
 	
 	// Compute target positions
 	for(unsigned int i = 0; i < p0.size(); i++)
-		g[i] = AR_glm * (p0[i] - initialCenterOfMass) + centerOfMass;
+		g[i] = R_glm * (p0[i] - initialCenterOfMass) + centerOfMass;
 
 
 
 
 
 
-/*
+
 	// Set X and Y matrices (we assume that all particles have the same mass)
 	initialCenterOfMass2 = glm::vec3(0,0,0);
 	for(unsigned int i = 0; i < p.size(); i++)
@@ -160,11 +160,14 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 	}
 
 	// Make sure volume is conserved for linear transformation
-	A /= pow(arma::det(A), 1/3.0f);
+	float scaleFactor = pow(arma::det(A), 1/3.0f);
+	if (scaleFactor > 0.1)
+		A /= scaleFactor;// pow(arma::det(A), 1/3.0f);
+
 
 	// Linear combination of rotation and linear transformation matrix
-	float beta = 0.5;
-	AR = (beta * A + (1 - beta) * I);
+	//float beta = 0.5;
+	AR = (pArg.deformation * A + (1 - pArg.deformation) * I);
 
 	// Convert to glm matrix
 	glm::mat3 AR_glm = to_glm(AR);
@@ -173,8 +176,6 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 	// Compute target positions
 	for(unsigned int i = 0; i < p0.size(); i++)
 		g[i] = AR_glm * (g[i] - initialCenterOfMass2) + centerOfMass;
-*/
-
 
 	// Add shape matching
 	for (int i = 0; i < p.size(); ++i)
