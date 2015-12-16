@@ -114,9 +114,65 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 
 
 
+	// Allocate
+	X = arma::fmat(3, p.size());
+	Y = arma::fmat(9, p.size());
+	I = arma::fmat(3, 9);
+	
+	I 	<< 1 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << arma::endr
+		<< 0 << 1 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << arma::endr
+		<< 0 << 0 << 1 << 0 << 0 << 0 << 0 << 0 << 0 << arma::endr;
+
+	// Set X and Y matrices (we assume that all particles have the same mass)
+	centerOfMass = computeCOM();
 
 
 
+
+
+
+
+	initialCenterOfMass2 = glm::vec3(0,0,0);
+	for(unsigned int i = 0; i < p.size(); i++)
+		initialCenterOfMass2 += g[i];
+	initialCenterOfMass2 = 1.0f / static_cast<float>(p.size()) * initialCenterOfMass2;
+
+	arma::fmat X2 = arma::fmat(9, p.size());
+	// Set X and Y matrices (we assume that all particles have the same mass)
+	for (int i = 0; i < p.size(); ++i)
+	{
+		X2(0,i) = g[i].x - initialCenterOfMass2.x;
+		X2(1,i) = g[i].y - initialCenterOfMass2.y;
+		X2(2,i) = g[i].z - initialCenterOfMass2.z;
+		X2(3,i) = (g[i].x - initialCenterOfMass2.x) * (g[i].x - initialCenterOfMass2.x);
+		X2(4,i) = (g[i].y - initialCenterOfMass2.y) * (g[i].y - initialCenterOfMass2.y);
+		X2(5,i) = (g[i].z - initialCenterOfMass2.z) * (g[i].z - initialCenterOfMass2.z);
+		X2(6,i) = (g[i].x - initialCenterOfMass2.x) * (g[i].y - initialCenterOfMass2.y);
+		X2(7,i) = (g[i].y - initialCenterOfMass2.y) * (g[i].z - initialCenterOfMass2.z);
+		X2(8,i) = (g[i].z - initialCenterOfMass2.z) * (g[i].x - initialCenterOfMass2.x);
+	}
+	// Compute the inverse covariance matrix
+	arma::fmat Aqq2 = (X2 * X2.t()).i();
+
+	for (int i = 0; i < p.size(); ++i)
+	{
+		X(0,i) = p[i].x - centerOfMass.x;
+		X(1,i) = p[i].y - centerOfMass.y;
+		X(2,i) = p[i].z - centerOfMass.z;
+		
+		Y(0,i) = g[i].x - initialCenterOfMass2.x;
+		Y(1,i) = g[i].y - initialCenterOfMass2.y;
+		Y(2,i) = g[i].z - initialCenterOfMass2.z;
+		Y(3,i) = (g[i].x - initialCenterOfMass2.x) * (g[i].x - initialCenterOfMass2.x);
+		Y(4,i) = (g[i].y - initialCenterOfMass2.y) * (g[i].y - initialCenterOfMass2.y);
+		Y(5,i) = (g[i].z - initialCenterOfMass2.z) * (g[i].z - initialCenterOfMass2.z);
+		Y(6,i) = (g[i].x - initialCenterOfMass2.x) * (g[i].y - initialCenterOfMass2.y);
+		Y(7,i) = (g[i].y - initialCenterOfMass2.y) * (g[i].z - initialCenterOfMass2.z);
+		Y(8,i) = (g[i].z - initialCenterOfMass2.z) * (g[i].x - initialCenterOfMass2.x);
+	}
+
+
+/*
 	// Set X and Y matrices (we assume that all particles have the same mass)
 	initialCenterOfMass2 = glm::vec3(0,0,0);
 	for(unsigned int i = 0; i < p.size(); i++)
@@ -130,6 +186,8 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 		X2(0,i) = g[i].x - initialCenterOfMass2.x;
 		X2(1,i) = g[i].y - initialCenterOfMass2.y;
 		X2(2,i) = g[i].z - initialCenterOfMass2.z;
+
+
 	}
 	// Compute the inverse covariance matrix
 	arma::fmat Aqq2 = (X2 * X2.t()).i();
@@ -145,44 +203,69 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 		Y(1,i) = g[i].y - initialCenterOfMass2.y;
 		Y(2,i) = g[i].z - initialCenterOfMass2.z;
 	}
+	*/
 	// Compute matrices
 	Apq = X * Y.t();
-	arma::svd(U,s,V,Apq);
-	R = V * U.t();
+	//arma::svd(U,s,V,Apq);
+	//R = V * U.t();
 	A = Apq * Aqq2;
 
 	// If rotation has a reflection, reflect back
-	if (det(R) < 0)
-	{
-		R(0,2) = -R(0,2);
-		R(1,2) = -R(1,2);
-		R(2,2) = -R(2,2);
-	}
+	//if (det(R) < 0)
+	//{
+	//	R(0,2) = -R(0,2);
+	//	R(1,2) = -R(1,2);
+	//	R(2,2) = -R(2,2);
+	//}
 
 	// Make sure volume is conserved for linear transformation
-	float scaleFactor = pow(arma::det(A) > 0.1 ? arma::det(A) : 0.1, 1/3.0f);
+	//float scaleFactor = pow(arma::det(A) > 0.1 ? arma::det(A) : 0.1, 1/3.0f);
 	//if (scaleFactor > 0.1)
-		A /= scaleFactor;// pow(arma::det(A), 1/3.0f);
+	//	A /= scaleFactor;// pow(arma::det(A), 1/3.0f);
 
 
 	// Linear combination of rotation and linear transformation matrix
 	//float beta = 0.5;
 	AR = (pArg.deformation * A + (1 - pArg.deformation) * I);
 
+	arma::fmat AR_A = arma::fmat(3,3);
+	arma::fmat AR_Q = arma::fmat(3,3);
+	arma::fmat AR_M = arma::fmat(3,3);
+
+	AR_A <<	AR(0,0) << AR(0,1) << AR(0,2) << arma::endr <<
+			AR(1,0) << AR(1,1) << AR(1,2) << arma::endr <<
+			AR(2,0) << AR(2,1) << AR(2,2) << arma::endr;
+
+	AR_Q << AR(0,0 + 3) << AR(0,1 + 3) << AR(0,2 + 3) << arma::endr <<
+			AR(1,0 + 3) << AR(1,1 + 3) << AR(1,2 + 3) << arma::endr <<
+			AR(2,0 + 3) << AR(2,1 + 3) << AR(2,2 + 3) << arma::endr;
+
+	AR_M << AR(0,0 + 6) << AR(0,1 + 6) << AR(0,2 + 6) << arma::endr <<
+			AR(1,0 + 6) << AR(1,1 + 6) << AR(1,2 + 6) << arma::endr <<
+			AR(2,0 + 6) << AR(2,1 + 6) << AR(2,2 + 6) << arma::endr;
+
 	// Convert to glm matrix
-	glm::mat3 AR_glm = to_glm(AR);
+	glm::mat3 AR_A_glm = to_glm(AR_A);
+	glm::mat3 AR_Q_glm = to_glm(AR_Q);
+	glm::mat3 AR_M_glm = to_glm(AR_M);
 	//glm::mat3 R_glm = to_glm(R);
 	
 	// Compute target positions
 	for(unsigned int i = 0; i < p0.size(); i++)
-		g[i] = AR_glm * (g[i] - initialCenterOfMass2) + centerOfMass;
+	{
+		g[i] =
+			AR_A_glm * (g[i] - initialCenterOfMass2) +//glm::vec3((g[i] - initialCenterOfMass2).x, (g[i] - initialCenterOfMass2).y, (g[i] - initialCenterOfMass2).z) +
+			AR_Q_glm * glm::vec3((g[i] - initialCenterOfMass2).x * (g[i] - initialCenterOfMass2).x, (g[i] - initialCenterOfMass2).y * (g[i] - initialCenterOfMass2).y, (g[i] - initialCenterOfMass2).z * (g[i] - initialCenterOfMass2).z) +
+			AR_M_glm * glm::vec3((g[i] - initialCenterOfMass2).x * (g[i] - initialCenterOfMass2).y, (g[i] - initialCenterOfMass2).y * (g[i] - initialCenterOfMass2).z, (g[i] - initialCenterOfMass2).z * (g[i] - initialCenterOfMass2).x) +
+		 	centerOfMass;
+	}
 
 	// Add shape matching
 	for (int i = 0; i < p.size(); ++i)
 	{
 		v[i] += pArg.flappyness * pArg.stiffness * (g[i] - p[i]) / dt;
 		p[i] += pArg.stiffness * (g[i] - p[i]);
-	}	
+	}
 }
 
 glm::vec3 ParticleSystem::getPosition(int i)
