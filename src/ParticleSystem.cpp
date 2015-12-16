@@ -160,8 +160,8 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 	}
 
 	// Make sure volume is conserved for linear transformation
-	float scaleFactor = pow(arma::det(A), 1/3.0f);
-	if (scaleFactor > 0.1)
+	float scaleFactor = pow(arma::det(A) > 0.1 ? arma::det(A) : 0.1, 1/3.0f);
+	//if (scaleFactor > 0.1)
 		A /= scaleFactor;// pow(arma::det(A), 1/3.0f);
 
 
