@@ -123,19 +123,18 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 		<< 0 << 1 << 0 << 0 << 0 << 0 << 0 << 0 << 0 << arma::endr
 		<< 0 << 0 << 1 << 0 << 0 << 0 << 0 << 0 << 0 << arma::endr;
 
-	// Set X and Y matrices (we assume that all particles have the same mass)
-	centerOfMass = computeCOM();
 
 
 
 
 
-
-
+/*
 	initialCenterOfMass2 = glm::vec3(0,0,0);
 	for(unsigned int i = 0; i < p.size(); i++)
 		initialCenterOfMass2 += g[i];
 	initialCenterOfMass2 = 1.0f / static_cast<float>(p.size()) * initialCenterOfMass2;
+*/
+	initialCenterOfMass2 = centerOfMass;
 
 	arma::fmat X2 = arma::fmat(9, p.size());
 	// Set X and Y matrices (we assume that all particles have the same mass)
@@ -240,9 +239,15 @@ void ParticleSystem::matchShape(float dt, PhysicsArguments pArg)
 			AR(1,0 + 3) << AR(1,1 + 3) << AR(1,2 + 3) << arma::endr <<
 			AR(2,0 + 3) << AR(2,1 + 3) << AR(2,2 + 3) << arma::endr;
 
+	AR_Q = AR_Q.t();
+
 	AR_M << AR(0,0 + 6) << AR(0,1 + 6) << AR(0,2 + 6) << arma::endr <<
 			AR(1,0 + 6) << AR(1,1 + 6) << AR(1,2 + 6) << arma::endr <<
 			AR(2,0 + 6) << AR(2,1 + 6) << AR(2,2 + 6) << arma::endr;
+
+	float scaleFactor = pow(arma::det(AR_A) > 0.1 ? arma::det(AR_A) : 0.1, 1/3.0f);
+	//if (scaleFactor > 0.1)
+		AR_A /= scaleFactor;// pow(arma::det(A), 1/3.0f);
 
 	// Convert to glm matrix
 	glm::mat3 AR_A_glm = to_glm(AR_A);
