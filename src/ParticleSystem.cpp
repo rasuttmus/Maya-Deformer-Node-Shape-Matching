@@ -1,5 +1,5 @@
 #include "../include/ParticleSystem.h"
-ParticleSystem::ParticleSystem(std::vector<glm::vec3> positions)
+ParticleSystem::ParticleSystem(std::vector<glm::vec3> positions, glm::vec3 initialVelocity)
 {
 	// Reset all attributes
 	p0.resize(positions.size());
@@ -12,7 +12,7 @@ ParticleSystem::ParticleSystem(std::vector<glm::vec3> positions)
 		p0[i] = positions[i];
 		p[i] = positions[i];
 		g[i] = positions[i];
-		v[i] = glm::vec3(0,0,0);
+		v[i] = initialVelocity;
 		F[i] = glm::vec3(0,0,0);
 	}
 	initialCenterOfMass = computeCOM();

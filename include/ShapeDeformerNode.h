@@ -50,6 +50,9 @@ public:
     static MObject StaticFriction;
     static MObject DynamicFriction;
 
+    // Initial values
+    static MObject InitialVelocity;
+
 private:
     static ParticleSystem* ps;
     static bool firstFrame;

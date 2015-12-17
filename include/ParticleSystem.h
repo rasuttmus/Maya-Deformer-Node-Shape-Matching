@@ -28,7 +28,7 @@ struct PhysicsArguments
 class ParticleSystem
 {
 public:
-	ParticleSystem(std::vector<glm::vec3> positions);
+	ParticleSystem(std::vector<glm::vec3> positions, glm::vec3 initialVelocity);
 	~ParticleSystem();
 
 	void stepPhysics(float dt, PhysicsArguments pArg);

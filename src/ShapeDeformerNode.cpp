@@ -16,6 +16,7 @@ MObject ShapeDeformerNode::Deformation;
 MObject ShapeDeformerNode::Elasticity;
 MObject ShapeDeformerNode::StaticFriction;
 MObject ShapeDeformerNode::DynamicFriction;
+MObject ShapeDeformerNode::InitialVelocity;
 
 bool ShapeDeformerNode::firstFrame;
 ParticleSystem* ShapeDeformerNode::ps;
@@ -29,15 +30,19 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
   MTime tNow = data.inputValue(CurrentTime).asTime();
   if (firstFrame || tNow.value() == 1)
   { // Ugly hack (constructor here)
+    if(ps)
+      delete ps;
+
     tPrevious = data.inputValue(CurrentTime).asTime();
     std::vector<glm::vec3> p0;
+    glm::vec3 v0 = to_glm(data.inputValue(InitialVelocity).asVector());
     for (; !itGeo.isDone(); itGeo.next()) {
       // Positions in world coordinates
       MPoint vertexPos = itGeo.position() * localToWorldMatrix;
       glm::vec3 p0i(vertexPos.x, vertexPos.y, vertexPos.z);
       p0.push_back(p0i);
     }
-    ps = new ParticleSystem(p0);
+    ps = new ParticleSystem(p0, v0);
 
     firstFrame = false;
     return MS::kSuccess;
@@ -151,7 +156,7 @@ MStatus ShapeDeformerNode::initialize()
   nAttr.setChannelBox(true);
   nAttr.setMin(0.0);
   nAttr.setMax(1.0);
-  
+
   Deformation = nAttr.create("Deformation", "de", MFnNumericData::kDouble, 0.0);
   nAttr.setDefault(0.5);
   nAttr.setChannelBox(true);
@@ -176,6 +181,12 @@ MStatus ShapeDeformerNode::initialize()
   nAttr.setMin(0.0);
   nAttr.setMax(1.0);
   
+  InitialVelocity = nAttr.create("InitialVelocity", "iv", MFnNumericData::k3Double, 0.0);
+  nAttr.setDefault(0.0);
+  nAttr.setMin(-10.0);
+  nAttr.setMax(10.0);
+  nAttr.setChannelBox(true);
+
   // Add the attributes
   addAttribute(CurrentTime);
   addAttribute(GravityMagnitude);
@@ -187,6 +198,7 @@ MStatus ShapeDeformerNode::initialize()
   addAttribute(Elasticity);
   addAttribute(StaticFriction);
   addAttribute(DynamicFriction);
+  addAttribute(InitialVelocity);
 
   // Affecting (What does this do?)
   attributeAffects(CurrentTime, outputGeom);
@@ -199,6 +211,7 @@ MStatus ShapeDeformerNode::initialize()
   attributeAffects(Elasticity, outputGeom);
   attributeAffects(StaticFriction, outputGeom);
   attributeAffects(DynamicFriction, outputGeom);
+  attributeAffects(InitialVelocity, outputGeom);
 
   // Make the deformer weights paintable (maybe wait with this)
   // MGlobal::executeCommand("makePaintable -attrType multiFloat -sm deformer ShapeDeformerNode weights;");
