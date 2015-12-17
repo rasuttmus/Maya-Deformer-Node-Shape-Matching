@@ -46,6 +46,4 @@ private:
 	std::vector<glm::vec3> F;
 	std::vector<glm::vec3> g;
 	glm::vec3 initialCenterOfMass;
-
-	arma::fmat Aqq; // Inverse covariance matrix for initial shape
 };

@@ -1,15 +1,3 @@
-// New file and reload plugin
-file -f -new
-PluginManager;
-pluginWin;
- 
-unloadPluginWithCheck( "/Users/kbladin/Documents/maya_plugins/Maya-Deformer-Node-Shape-Matching/build/src/sampleplugin.bundle" );
-updatePluginCallback();
- 
-loadPlugin "/Users/kbladin/Documents/maya_plugins/Maya-Deformer-Node-Shape-Matching/build/src/sampleplugin.bundle" ;
-updatePluginCallback();
-window -e -vis 0 pluginManagerWindow;
-
 // Create a plane and a sphere
 polyPlane -ch on -o on -w 10 -h 10 -sw 1 -sh 1 -cuv 2;
 polyTorus;

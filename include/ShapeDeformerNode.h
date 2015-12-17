@@ -35,7 +35,7 @@ public:
     // Unique id
     static MTypeId id;
 
-    // Attributes (a as in attribute on variable names)
+    // Attributes
     // Global attributes
     static MObject GravityMagnitude;
     static MObject GravityDirection;

@@ -29,7 +29,8 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
 {
   MTime tNow = data.inputValue(CurrentTime).asTime();
   if (firstFrame || tNow.value() == 1)
-  { // Ugly hack (constructor here)
+  { // Ugly hack (constructor here)...
+    //Can we access the geometry in the constructor instead?
     if(ps)
       delete ps;
 
@@ -50,10 +51,9 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
   else
   { // Update 
     MStatus status;
-    
-    // Data used in the calculations
+    // Currently we don't use the envelope
+    // (would be weird since we have our own particle system)
     float env;
-
     PhysicsArguments pArg;
     MPoint vertexPos;
 
@@ -62,7 +62,6 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
     tNow = data.inputValue(CurrentTime).asTime();
     MTime timeDiff = tNow - tPrevious;
     tPrevious = tNow;
-    
     pArg.gravity = to_glm(data.inputValue(GravityMagnitude).asDouble() *
         data.inputValue(GravityDirection).asVector());
     pArg.mass = data.inputValue(Mass).asDouble();
@@ -72,19 +71,9 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
     pArg.elasticity = data.inputValue(Elasticity).asDouble();
     pArg.dynamicFriction = data.inputValue(DynamicFriction).asDouble();
     pArg.staticFriction = data.inputValue(StaticFriction).asDouble();
-    
-    // Get the input mesh (fnInputMesh)
-    MArrayDataHandle hInput = data.outputArrayValue( input, &status );
-    CHECK_MSTATUS_AND_RETURN_IT( status )
-    status = hInput.jumpToElement( mIndex );
-    CHECK_MSTATUS_AND_RETURN_IT( status )
-    MObject oInputGeom = hInput.outputValue().child( inputGeom ).asMesh();
-    MFnMesh fnInputMesh( oInputGeom );
 
-    //std::string output = "timeDiff = ";
-    //output += std::to_string(timeDiff.value());
-    //MGlobal::displayInfo(output.c_str());
-
+    // Update the particle systems positions with dynamics simulation and
+    // Shape matching
     if (ps)
     {
       int updates = timeDiff.value();
@@ -99,6 +88,8 @@ MStatus ShapeDeformerNode::deform(MDataBlock& data, MItGeometry& itGeo,
     {
       MGlobal::displayInfo("ps == NULL");
     }
+
+    // Update output positions
     MMatrix localToWorldMatrixInv = localToWorldMatrix.inverse();
     for (; !itGeo.isDone(); itGeo.next())
     {

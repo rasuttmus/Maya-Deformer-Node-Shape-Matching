@@ -4,7 +4,6 @@
 
 #include <maya/MVector.h>
 
-
 #include "../ext/glm/glm.hpp"
 #include "../ext/glm/gtc/type_ptr.hpp"
 #include "../ext/glm/gtx/transform.hpp"
