@@ -29,13 +29,13 @@ Compile:
 
 Load plugin:
   * OSX:
-    * The compiler will build the file sampleplugin.bundle,
+    * The compiler will build the file shapeMatchDeformer.bundle,
   * Linux
     * ..
   * Windows
     * ..
   * Open Maya and go to Window -> Settings/Preferences -> Plug-in Manager
-  * Browse for sampleplugin and open.
+  * Browse for shapeMatchDeformer and open.
 
 Now the helloWorld function can be run from the python terminal by:
   * import maya.cmds as cmds
@@ -48,7 +48,7 @@ The deformer plugin is used as follows:
   	cmds.deformer(type='shapeMatchDeformer')
 
 A default scene can be created by running the script melScripts/createExampleScene.mel
-This will create a sphere and add a shapeMatchDeformer-node to it. It will
+This will create a torus and add a shapeMatchDeformer-node to it. It will
 also connect the attributes (gravity and time) so that the simulation can be run.
 
 If Armadillo needs to be compiled:
